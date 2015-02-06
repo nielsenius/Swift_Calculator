@@ -14,6 +14,7 @@ class Model {
     // declare class attributes
     //
     
+    // TODO: lab should specify these values, but don't give this code to students
     var num1: String
     var op: String
     var num2: String
@@ -24,6 +25,7 @@ class Model {
         num2 = ""
     }
     
+    // TODO: give students this function
     func strToFloat(str: String) -> Float {
         return NSString(string: str).floatValue
     }

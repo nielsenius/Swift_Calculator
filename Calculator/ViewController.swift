@@ -77,6 +77,7 @@ class ViewController: UIViewController {
         sender.backgroundColor = lightGrayColor
     }
     
+    // TODO: give opportunity to clean up this code with sender.currentTitle()
     // numeric key is released from press
     func keyRelease(sender: UIButton) {
         switch sender.tag {
@@ -138,6 +139,7 @@ class ViewController: UIViewController {
     // other functions
     //
     
+    // TODO: consider making this a teaching opportunity for designing for different device sizes
     // set the size of the keypad based on screen size
     func calculateKeypadHeight() -> CGFloat {
         switch screenHeight {
@@ -247,6 +249,7 @@ class ViewController: UIViewController {
             button.setTitleColor(UIColor.blackColor(), forState: UIControlState.Normal)
             button.tag = tag
             
+            // TODO: possibility of pulling this code out for lab
             button.addTarget(self, action: "keyPress:", forControlEvents: UIControlEvents.TouchDown)
             button.addTarget(self, action: "animateKeyRelease:", forControlEvents: UIControlEvents.TouchUpInside)
             button.addTarget(self, action: "animateKeyRelease:", forControlEvents: UIControlEvents.TouchDragOutside)
