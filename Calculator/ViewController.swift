@@ -74,27 +74,63 @@ class ViewController: UIViewController {
     
     // any key in the keypad is pressed
     func keyPress(sender: UIButton) {
-        if sender.tag == 12 || sender.tag == 13 {
-            // C and Del keys
-            sender.backgroundColor = midGrayColor
-        } else {
-            // all other keys
-            sender.backgroundColor = lightGrayColor
-        }
+        sender.backgroundColor = lightGrayColor
     }
     
     // numeric key is released from press
     func keyRelease(sender: UIButton) {
         switch sender.tag {
         case 0:
-            // some shit
+            // 7
+            model.inputNum("7")
+        case 1:
+            // 8
+            model.inputNum("8")
+        case 2:
+            // 9
+            model.inputNum("9")
+        case 3:
+            // divide
+            model.inputOp("/")
+        case 4:
+            // 4
+            model.inputNum("4")
+        case 5:
+            // 5
+            model.inputNum("5")
+        case 6:
+            // 6
+            model.inputNum("6")
+        case 7:
+            // multiply
+            model.inputOp("x")
+        case 8:
+            // 1
+            model.inputNum("1")
+        case 9:
+            // 2
+            model.inputNum("2")
+        case 10:
+            // 3
+            model.inputNum("3")
+        case 11:
+            // subtract
+            model.inputOp("-")
+        case 12:
+            // 0
+            model.inputNum("0")
+        case 13:
+            // decimal
+            model.inputNum(".")
+        case 14:
+            // equals
+            textField.text = "\(model.eval())"
+            model = Model()
+            return
         default:
-            //
+            // plus
+            model.inputOp("+")
         }
-        
-        
-        model.appendNumToBill(String(sender.tag))
-        animateButtonRelease(sender)
         redrawDisplay()
     }
     
@@ -106,15 +142,15 @@ class ViewController: UIViewController {
     func calculateKeypadHeight() -> CGFloat {
         switch screenHeight {
         case 480.0:
-            return 272
+            return 218
         case 568.0:
-            return 400
+            return 320
         case 667.0:
-            return 470
+            return 375
         case 736:
-            return 518
+            return 414
         default:
-            return 612
+            return 490
         }
     }
     
@@ -136,18 +172,12 @@ class ViewController: UIViewController {
     }
     
     // subtle animation when a key is released
-    func animateButtonRelease(sender: UIButton) {
+    func animateKeyRelease(sender: UIButton) {
         UIView.animateWithDuration(0.3,
             delay: 0,
             options: UIViewAnimationOptions.AllowUserInteraction,
             animations: {
-                if sender.tag == 12 || sender.tag == 13 {
-                    // C and Del keys
-                    sender.backgroundColor = self.lightGrayColor
-                } else {
-                    // all other keys
-                    sender.backgroundColor = UIColor.whiteColor()
-                }
+                sender.backgroundColor = UIColor.whiteColor()
             }, completion: {
                 finished in
             }
@@ -160,7 +190,7 @@ class ViewController: UIViewController {
     
     // redraws the money display and the controls when a change is made
     func redrawDisplay() {
-        // just need to update one textfield
+        textField.text = model.formatValues()
     }
     
     // draw the money display section of the UI
@@ -177,8 +207,8 @@ class ViewController: UIViewController {
         var numHeight: CGFloat = numFontSize + 4
         
         
-        textField = UITextField(frame: CGRectMake(margin + labelWidth, thirdSpace, screenWidth - labelWidth - margin * 2, numHeight))
-        textField.text = ""
+        textField = UITextField(frame: CGRectMake(margin, 20, screenWidth - margin * 2, numHeight))
+        textField.text = "0"
         textField.font = UIFont(name: "HelveticaNeue-UltraLight", size: numFontSize)
         textField.textColor = UIColor.whiteColor()
         textField.textAlignment = .Right
@@ -194,7 +224,7 @@ class ViewController: UIViewController {
     // draw the keypad section of the UI
     func drawKeypad() {
         // instantiate the keypad UIView
-        keypad = UIView(frame: CGRectMake(0, displayHeight + controlsHeight, screenWidth, keypadHeight))
+        keypad = UIView(frame: CGRectMake(0, displayHeight, screenWidth, keypadHeight))
         
         
         // calculate values for drawing elements
@@ -202,101 +232,49 @@ class ViewController: UIViewController {
         var keyHeight: CGFloat = keypadHeight / 4
         var numFontSize: CGFloat = keyHeight / 2.25
         var charFontSize: CGFloat = keyHeight / 3.25
-        var keys = ["7", "8", "9", "4", "5", "6", "1", "2", "3"]
+        var keys = ["7", "8", "9", "/", "4", "5", "6", "x", "1", "2", "3", "-", "0", ".", "=", "+"]
+        // tags:     0    1    2    3    4    5    6    7    8    9    10   11   12   13   14   15
         
         
         // draw numeric keys
         var count: CGFloat = 0
+        var tag = 0
         for key in keys {
-            var button = UIButton(frame: CGRectMake(count % 3 * keyWidth, CGFloat(Int(count / 3)) * keyHeight, keyWidth, keyHeight))
+            var button = UIButton(frame: CGRectMake(count % 4 * keyWidth, CGFloat(Int(count / 4)) * keyHeight, keyWidth, keyHeight))
             button.setTitle(key, forState: UIControlState.Normal)
             button.titleLabel!.font = UIFont(name: "HelveticaNeue-Thin", size: numFontSize)
             button.backgroundColor = UIColor.whiteColor()
             button.setTitleColor(UIColor.blackColor(), forState: UIControlState.Normal)
-            button.tag = key.toInt()!
+            button.tag = tag
             
-            button.addTarget(self, action: "anyButtonPress:", forControlEvents: UIControlEvents.TouchDown)
-            button.addTarget(self, action: "animateButtonRelease:", forControlEvents: UIControlEvents.TouchUpInside)
-            button.addTarget(self, action: "animateButtonRelease:", forControlEvents: UIControlEvents.TouchDragOutside)
-            button.addTarget(self, action: "numButtonRelease:", forControlEvents: UIControlEvents.TouchUpInside)
+            button.addTarget(self, action: "keyPress:", forControlEvents: UIControlEvents.TouchDown)
+            button.addTarget(self, action: "animateKeyRelease:", forControlEvents: UIControlEvents.TouchUpInside)
+            button.addTarget(self, action: "animateKeyRelease:", forControlEvents: UIControlEvents.TouchDragOutside)
+            button.addTarget(self, action: "keyRelease:", forControlEvents: UIControlEvents.TouchUpInside)
             
             keypad.addSubview(button)
             
             count++
+            tag++
         }
         
         
-        // draw the zero key
-        var zero = UIButton(frame: CGRectMake(0, keypadHeight - keyHeight, keyWidth * 2, keyHeight))
-        zero.setTitle("0", forState: UIControlState.Normal)
-        zero.titleLabel!.font = UIFont(name: "HelveticaNeue-Thin", size: numFontSize)
-        zero.titleEdgeInsets = UIEdgeInsetsMake(0.0, -keyWidth, 0.0, 0.0)
-        zero.backgroundColor = UIColor.whiteColor()
-        zero.setTitleColor(UIColor.blackColor(), forState: UIControlState.Normal)
-        zero.tag = 0
-        
-        zero.addTarget(self, action: "anyButtonPress:", forControlEvents: UIControlEvents.TouchDown)
-        zero.addTarget(self, action: "animateButtonRelease:", forControlEvents: UIControlEvents.TouchUpInside)
-        zero.addTarget(self, action: "animateButtonRelease:", forControlEvents: UIControlEvents.TouchDragOutside)
-        zero.addTarget(self, action: "numButtonRelease:", forControlEvents: UIControlEvents.TouchUpInside)
-        
-        keypad.addSubview(zero)
-        
-        
-        // draw the decimal key
-        var decimal = UIButton(frame: CGRectMake(keyWidth * 2, keypadHeight - keyHeight, keyWidth, keyHeight))
-        decimal.setTitle(".", forState: UIControlState.Normal)
-        decimal.titleLabel!.font = UIFont(name: "HelveticaNeue-Bold", size: charFontSize)
-        decimal.backgroundColor = UIColor.whiteColor()
-        decimal.setTitleColor(UIColor.blackColor(), forState: UIControlState.Normal)
-        decimal.tag = 11
-        
-        decimal.addTarget(self, action: "anyButtonPress:", forControlEvents: UIControlEvents.TouchDown)
-        decimal.addTarget(self, action: "animateButtonRelease:", forControlEvents: UIControlEvents.TouchUpInside)
-        decimal.addTarget(self, action: "animateButtonRelease:", forControlEvents: UIControlEvents.TouchDragOutside)
-        decimal.addTarget(self, action: "decimalButtonRelease:", forControlEvents: UIControlEvents.TouchUpInside)
-        
-        keypad.addSubview(decimal)
-        
-        
-        // draw the C key
-        var clear = UIButton(frame: CGRectMake(keyWidth * 3, 0, keyWidth, keyHeight * 2))
-        clear.setTitle("C", forState: UIControlState.Normal)
-        clear.titleLabel!.font = UIFont(name: "HelveticaNeue-Thin", size: charFontSize)
-        clear.backgroundColor = lightGrayColor
-        clear.setTitleColor(UIColor.blackColor(), forState: UIControlState.Normal)
-        clear.tag = 12
-        
-        clear.addTarget(self, action: "anyButtonPress:", forControlEvents: UIControlEvents.TouchDown)
-        clear.addTarget(self, action: "animateButtonRelease:", forControlEvents: UIControlEvents.TouchUpInside)
-        clear.addTarget(self, action: "animateButtonRelease:", forControlEvents: UIControlEvents.TouchDragOutside)
-        clear.addTarget(self, action: "clearButtonRelease:", forControlEvents: UIControlEvents.TouchUpInside)
-        
-        keypad.addSubview(clear)
-        
-        
-        // draw the Del key
-        var delete = UIButton(frame: CGRectMake(keyWidth * 3, keyHeight * 2, keyWidth, keyHeight * 2))
-        delete.setTitle("Del", forState: UIControlState.Normal)
-        delete.titleLabel!.font = UIFont(name: "HelveticaNeue-Thin", size: charFontSize)
-        delete.backgroundColor = lightGrayColor
-        delete.setTitleColor(UIColor.blackColor(), forState: UIControlState.Normal)
-        delete.tag = 13
-        
-        delete.addTarget(self, action: "anyButtonPress:", forControlEvents: UIControlEvents.TouchDown)
-        delete.addTarget(self, action: "animateButtonRelease:", forControlEvents: UIControlEvents.TouchUpInside)
-        delete.addTarget(self, action: "animateButtonRelease:", forControlEvents: UIControlEvents.TouchDragOutside)
-        delete.addTarget(self, action: "deleteButtonRelease:", forControlEvents: UIControlEvents.TouchUpInside)
-        
-        keypad.addSubview(delete)
-        
-        
         // add dividing lines to give keys distinct boundaries
-        var dividers: [[CGFloat]] = [[0, 0, screenWidth, dividerSize], [0, keyHeight, screenWidth - keyWidth, dividerSize], [0, keyHeight * 2, screenWidth, dividerSize], [0, keyHeight * 3, screenWidth - keyWidth, dividerSize], [keyWidth, 0, dividerSize, keyHeight * 3], [keyWidth * 2, 0, dividerSize, keypadHeight], [keyWidth * 3, 0, dividerSize, keypadHeight]]
-        for coords in dividers {
-            var divider = UIView(frame: CGRectMake(coords[0], coords[1], coords[2], coords[3]))
+        var x: CGFloat = 0
+        for divider in 0...2 {
+            var divider = UIView(frame: CGRectMake(0, keyHeight * (x + 1), screenWidth, dividerSize))
             divider.backgroundColor = UIColor.blackColor()
             keypad.addSubview(divider)
+            
+            x++
+        }
+        x = 0
+        for divider in 0...2 {
+            var divider = UIView(frame: CGRectMake(keyWidth * (x + 1), 0, dividerSize, keypadHeight))
+            divider.backgroundColor = UIColor.blackColor()
+            keypad.addSubview(divider)
+            
+            x++
         }
         
         
